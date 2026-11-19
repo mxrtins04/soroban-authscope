@@ -36,6 +36,13 @@ pub enum AuthMismatch {
         expected: usize,
         actual: usize,
     },
+
+    #[error("Over-privileged authorization scope detected at '{contract}' function '{function}': parameter {parameter_index} uses unbounded wildcard")]
+    OverPrivilegedScope {
+        contract: String,
+        function: String,
+        parameter_index: usize,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -89,17 +96,19 @@ impl StrictVerifier {
             });
         }
 
-        // Check for wildcards
+        // Check for wildcards and over-privileged scopes
         if matches!(
             self.policy,
-            VerificationPolicy::DisallowWildcards | VerificationPolicy::StrictNonWildcard
+            VerificationPolicy::DisallowWildcards | VerificationPolicy::StrictNonWildcard | VerificationPolicy::ExactArgsOnly
         ) {
-            let has_wildcard = node.function.args.iter().any(|arg| matches!(arg, AuthVal::Wildcard));
-            if has_wildcard {
-                report.violations.push(AuthMismatch::WildcardDisallowed {
-                    contract: node.function.contract.to_string(),
-                    function: node.function.function_name.clone(),
-                });
+            for (idx, arg) in node.function.args.iter().enumerate() {
+                if matches!(arg, AuthVal::Wildcard) {
+                    report.violations.push(AuthMismatch::OverPrivilegedScope {
+                        contract: node.function.contract.to_string(),
+                        function: node.function.function_name.clone(),
+                        parameter_index: idx,
+                    });
+                }
             }
         }
 

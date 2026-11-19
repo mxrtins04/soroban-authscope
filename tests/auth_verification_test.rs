@@ -104,7 +104,7 @@ fn test_wildcard_permission_rejection() {
         .analyze(&wildcard_call)
         .expect_err("Wildcard arguments must be rejected under StrictNonWildcard policy");
 
-    assert!(err_report.violations.iter().any(|v| v.to_string().contains("Wildcard")));
+    assert!(err_report.violations.iter().any(|v| v.to_string().to_lowercase().contains("wildcard")));
 }
 
 #[test]
