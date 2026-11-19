@@ -128,3 +128,51 @@ fn test_json_trace_export() {
     assert!(json.contains("\"function_name\": \"ping\""));
     assert!(json.contains("\"is_authorized\": true"));
 }
+
+#[test]
+fn test_circular_invocation_detection() {
+    use soroban_authscope::AuthMismatch;
+
+    // Node A calls Node B calls Node A (Loop!)
+    let loop_tree = InvocationNode::new("CONTRACT_A", "callback_entry", vec![])
+        .set_authorized(true)
+        .with_sub_invocation(
+            InvocationNode::new("CONTRACT_B", "invoke_external", vec![])
+                .set_authorized(true)
+                .with_sub_invocation(
+                    InvocationNode::new("CONTRACT_A", "callback_entry", vec![])
+                        .set_authorized(true),
+                ),
+        );
+
+    let scope = AuthScope::strict();
+    let err = scope.analyze(&loop_tree).expect_err("Circular invocation must be flagged");
+    assert!(err.violations.iter().any(|v| matches!(v, AuthMismatch::CircularInvocation { .. })));
+}
+
+#[test]
+fn test_trace_parser_and_markdown_reporter() {
+    use soroban_authscope::{MarkdownReporter, TraceParser};
+
+    let json_trace = r#"{
+        "schema_version": "2.0",
+        "network_passphrase": "Test SDF Network ; September 2015",
+        "root": {
+            "function": {
+                "contract": "CA_POOL",
+                "function_name": "deposit",
+                "args": [{"Address": "G_USER"}]
+            },
+            "is_authorized": true,
+            "sub_invocations": []
+        }
+    }"#;
+
+    let root = TraceParser::parse_json(json_trace).expect("Parser should parse valid envelope");
+    assert_eq!(root.function.function_name, "deposit");
+
+    let scope = AuthScope::strict();
+    let report = scope.analyze(&root).unwrap();
+    let md = MarkdownReporter::format(&report);
+    assert!(md.contains("VERIFIED SECURE"));
+}
