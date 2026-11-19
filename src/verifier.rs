@@ -43,6 +43,12 @@ pub enum AuthMismatch {
         function: String,
         parameter_index: usize,
     },
+
+    #[error("Circular contract invocation loop detected involving contract '{contract}': path={cycle_path:?}")]
+    CircularInvocation {
+        contract: String,
+        cycle_path: Vec<String>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -70,7 +76,8 @@ impl StrictVerifier {
 
     pub fn verify(&self, root: &InvocationNode) -> Result<DiagnosticReport, DiagnosticReport> {
         let mut report = DiagnosticReport::default();
-        self.verify_recursive(root, 0, &mut report);
+        let mut call_stack = Vec::new();
+        self.verify_recursive(root, 0, &mut call_stack, &mut report);
 
         if report.is_clean() {
             Ok(report)
@@ -79,8 +86,26 @@ impl StrictVerifier {
         }
     }
 
-    fn verify_recursive(&self, node: &InvocationNode, depth: usize, report: &mut DiagnosticReport) {
+    fn verify_recursive(
+        &self,
+        node: &InvocationNode,
+        depth: usize,
+        call_stack: &mut Vec<String>,
+        report: &mut DiagnosticReport,
+    ) {
         report.total_nodes_scanned += 1;
+        let contract_str = node.function.contract.to_string();
+
+        if call_stack.contains(&contract_str) {
+            let mut cycle = call_stack.clone();
+            cycle.push(contract_str.clone());
+            report.violations.push(AuthMismatch::CircularInvocation {
+                contract: contract_str.clone(),
+                cycle_path: cycle,
+            });
+        }
+
+        call_stack.push(contract_str);
 
         if node.is_authorized {
             report.authorized_nodes += 1;
@@ -113,7 +138,9 @@ impl StrictVerifier {
         }
 
         for sub in &node.sub_invocations {
-            self.verify_recursive(sub, depth + 1, report);
+            self.verify_recursive(sub, depth + 1, call_stack, report);
         }
+
+        call_stack.pop();
     }
 }
