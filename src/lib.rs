@@ -1,7 +1,11 @@
+pub mod parser;
+pub mod reporter;
 pub mod types;
 pub mod verifier;
 pub mod visualizer;
 
+pub use parser::{ParseError, TraceEnvelope, TraceParser};
+pub use reporter::MarkdownReporter;
 pub use types::{AuthContractId, AuthVal, InvocationFunction, InvocationNode};
 pub use verifier::{AuthMismatch, DiagnosticReport, StrictVerifier, VerificationPolicy};
 pub use visualizer::TreeVisualizer;
