@@ -50,6 +50,8 @@ pub struct InvocationNode {
     pub function: InvocationFunction,
     pub sub_invocations: Vec<InvocationNode>,
     pub is_authorized: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub invoker: Option<String>,
 }
 
 impl InvocationNode {
@@ -62,7 +64,13 @@ impl InvocationNode {
             },
             sub_invocations: Vec::new(),
             is_authorized: false,
+            invoker: None,
         }
+    }
+
+    pub fn with_invoker(mut self, invoker: impl Into<String>) -> Self {
+        self.invoker = Some(invoker.into());
+        self
     }
 
     pub fn with_sub_invocation(mut self, sub: InvocationNode) -> Self {
@@ -77,5 +85,13 @@ impl InvocationNode {
 
     pub fn total_nodes(&self) -> usize {
         1 + self.sub_invocations.iter().map(InvocationNode::total_nodes).sum::<usize>()
+    }
+
+    pub fn max_depth(&self) -> usize {
+        if self.sub_invocations.is_empty() {
+            1
+        } else {
+            1 + self.sub_invocations.iter().map(InvocationNode::max_depth).max().unwrap_or(0)
+        }
     }
 }
