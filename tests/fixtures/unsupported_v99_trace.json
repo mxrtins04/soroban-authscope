@@ -1,0 +1,12 @@
+{
+  "schema_version": "99.0",
+  "root": {
+    "function": {
+      "contract": "CA_POOL",
+      "function_name": "deposit",
+      "args": []
+    },
+    "is_authorized": true,
+    "sub_invocations": []
+  }
+}
