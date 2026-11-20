@@ -194,3 +194,28 @@ fn test_max_call_depth_threshold_exceeded() {
     let err = verifier.verify(&root).expect_err("Call exceeding max depth 1 must fail");
     assert!(err.violations.iter().any(|v| matches!(v, AuthMismatch::MaxDepthExceeded { depth: 2, max_depth: 1, .. })));
 }
+
+#[test]
+fn test_invocation_filter_matching() {
+    use soroban_authscope::InvocationFilter;
+
+    let leaf = InvocationNode::new("C_LEAF", "transfer", vec![]).set_authorized(true);
+    let sibling = InvocationNode::new("C_OTHER", "approve", vec![]).set_authorized(true);
+    let root = InvocationNode::new("C_ROOT", "execute", vec![])
+        .set_authorized(true)
+        .with_sub_invocation(leaf)
+        .with_sub_invocation(sibling);
+
+    let filter_contract = InvocationFilter::new().with_contract("C_LEAF");
+    let matches = filter_contract.find_matches(&root);
+    assert_eq!(matches.len(), 1);
+    assert_eq!(matches[0].function.contract.0, "C_LEAF");
+
+    let filter_fn = InvocationFilter::new().with_function("approve");
+    let matches_fn = filter_fn.find_matches(&root);
+    assert_eq!(matches_fn.len(), 1);
+    assert_eq!(matches_fn[0].function.function_name, "approve");
+
+    let filter_miss = InvocationFilter::new().with_contract("NONEXISTENT");
+    assert_eq!(filter_miss.find_matches(&root).len(), 0);
+}
