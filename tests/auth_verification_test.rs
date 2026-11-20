@@ -236,3 +236,21 @@ fn test_invalid_function_identifier_rejection() {
     let err_long = scope.analyze(&too_long).expect_err("Overlong function name must be rejected");
     assert!(err_long.violations.iter().any(|v| matches!(v, AuthMismatch::InvalidFunctionIdentifier { .. })));
 }
+
+#[test]
+fn test_json_summary_reporter_output() {
+    use soroban_authscope::JsonSummaryReporter;
+
+    let valid_node = InvocationNode::new("C_OK", "action", vec![]).set_authorized(true);
+    let scope = AuthScope::strict();
+    let report = scope.analyze(&valid_node).unwrap();
+
+    let summary = JsonSummaryReporter::summarize(&report);
+    assert_eq!(summary.status, "PASS");
+    assert_eq!(summary.total_nodes, 1);
+    assert_eq!(summary.authorized_nodes, 1);
+    assert_eq!(summary.violation_count, 0);
+
+    let json_str = JsonSummaryReporter::to_json_string(&report).unwrap();
+    assert!(json_str.contains(r#""status": "PASS""#));
+}
