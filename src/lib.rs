@@ -1,9 +1,11 @@
+pub mod filter;
 pub mod parser;
 pub mod reporter;
 pub mod types;
 pub mod verifier;
 pub mod visualizer;
 
+pub use filter::InvocationFilter;
 pub use parser::{ParseError, TraceEnvelope, TraceParser};
 pub use reporter::MarkdownReporter;
 pub use types::{AuthContractId, AuthVal, InvocationFunction, InvocationNode};
