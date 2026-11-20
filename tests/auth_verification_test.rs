@@ -219,3 +219,20 @@ fn test_invocation_filter_matching() {
     let filter_miss = InvocationFilter::new().with_contract("NONEXISTENT");
     assert_eq!(filter_miss.find_matches(&root).len(), 0);
 }
+
+#[test]
+fn test_invalid_function_identifier_rejection() {
+    use soroban_authscope::AuthMismatch;
+
+    let invalid_call = InvocationNode::new("C_CONTRACT", "deposit$bad!name", vec![])
+        .set_authorized(true);
+
+    let scope = AuthScope::strict();
+    let err = scope.analyze(&invalid_call).expect_err("Invalid function name must be rejected");
+    assert!(err.violations.iter().any(|v| matches!(v, AuthMismatch::InvalidFunctionIdentifier { .. })));
+
+    let too_long = InvocationNode::new("C_CONTRACT", "a".repeat(33), vec![])
+        .set_authorized(true);
+    let err_long = scope.analyze(&too_long).expect_err("Overlong function name must be rejected");
+    assert!(err_long.violations.iter().any(|v| matches!(v, AuthMismatch::InvalidFunctionIdentifier { .. })));
+}
