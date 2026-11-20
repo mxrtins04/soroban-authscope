@@ -57,6 +57,12 @@ pub enum AuthMismatch {
         depth: usize,
         max_depth: usize,
     },
+
+    #[error("Invalid function identifier '{function}' at contract '{contract}': function names must be 1..32 ascii alphanumeric or underscore characters")]
+    InvalidFunctionIdentifier {
+        contract: String,
+        function: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -122,6 +128,13 @@ impl StrictVerifier {
                     max_depth: limit,
                 });
             }
+        }
+
+        if !node.function.is_valid_identifier() {
+            report.violations.push(AuthMismatch::InvalidFunctionIdentifier {
+                contract: contract_str.clone(),
+                function: node.function.function_name.clone(),
+            });
         }
 
         if call_stack.contains(&contract_str) {

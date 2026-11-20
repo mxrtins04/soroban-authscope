@@ -45,6 +45,15 @@ pub struct InvocationFunction {
     pub args: Vec<AuthVal>,
 }
 
+impl InvocationFunction {
+    pub fn is_valid_identifier(&self) -> bool {
+        if self.function_name.is_empty() || self.function_name.len() > 32 {
+            return false;
+        }
+        self.function_name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InvocationNode {
     pub function: InvocationFunction,
