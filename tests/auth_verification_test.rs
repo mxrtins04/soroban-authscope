@@ -176,3 +176,21 @@ fn test_trace_parser_and_markdown_reporter() {
     let md = MarkdownReporter::format(&report);
     assert!(md.contains("VERIFIED SECURE"));
 }
+
+#[test]
+fn test_max_call_depth_threshold_exceeded() {
+    use soroban_authscope::{StrictVerifier, VerificationPolicy, AuthMismatch};
+
+    let leaf = InvocationNode::new("C_LEAF", "action", vec![]).set_authorized(true);
+    let child = InvocationNode::new("C_MID", "proxy", vec![])
+        .set_authorized(true)
+        .with_sub_invocation(leaf);
+    let root = InvocationNode::new("C_ROOT", "entry", vec![])
+        .set_authorized(true)
+        .with_sub_invocation(child);
+
+    // root is depth 0, child is depth 1, leaf is depth 2.
+    let verifier = StrictVerifier::new(VerificationPolicy::StrictAll).with_max_depth(1);
+    let err = verifier.verify(&root).expect_err("Call exceeding max depth 1 must fail");
+    assert!(err.violations.iter().any(|v| matches!(v, AuthMismatch::MaxDepthExceeded { depth: 2, max_depth: 1, .. })));
+}
