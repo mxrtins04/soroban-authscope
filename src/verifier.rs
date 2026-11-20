@@ -49,6 +49,14 @@ pub enum AuthMismatch {
         contract: String,
         cycle_path: Vec<String>,
     },
+
+    #[error("Invocation call depth {depth} exceeds configured maximum threshold {max_depth} at '{contract}' function '{function}'")]
+    MaxDepthExceeded {
+        contract: String,
+        function: String,
+        depth: usize,
+        max_depth: usize,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -67,11 +75,20 @@ impl DiagnosticReport {
 
 pub struct StrictVerifier {
     policy: VerificationPolicy,
+    max_depth: Option<usize>,
 }
 
 impl StrictVerifier {
     pub fn new(policy: VerificationPolicy) -> Self {
-        Self { policy }
+        Self {
+            policy,
+            max_depth: None,
+        }
+    }
+
+    pub fn with_max_depth(mut self, max_depth: usize) -> Self {
+        self.max_depth = Some(max_depth);
+        self
     }
 
     pub fn verify(&self, root: &InvocationNode) -> Result<DiagnosticReport, DiagnosticReport> {
@@ -95,6 +112,17 @@ impl StrictVerifier {
     ) {
         report.total_nodes_scanned += 1;
         let contract_str = node.function.contract.to_string();
+
+        if let Some(limit) = self.max_depth {
+            if depth > limit {
+                report.violations.push(AuthMismatch::MaxDepthExceeded {
+                    contract: contract_str.clone(),
+                    function: node.function.function_name.clone(),
+                    depth,
+                    max_depth: limit,
+                });
+            }
+        }
 
         if call_stack.contains(&contract_str) {
             let mut cycle = call_stack.clone();
