@@ -1,4 +1,33 @@
 use crate::verifier::DiagnosticReport;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SummaryStatistics {
+    pub status: String,
+    pub total_nodes: usize,
+    pub authorized_nodes: usize,
+    pub missing_auth: usize,
+    pub violation_count: usize,
+}
+
+pub struct JsonSummaryReporter;
+
+impl JsonSummaryReporter {
+    pub fn summarize(report: &DiagnosticReport) -> SummaryStatistics {
+        SummaryStatistics {
+            status: if report.is_clean() { "PASS".into() } else { "FAIL".into() },
+            total_nodes: report.total_nodes_scanned,
+            authorized_nodes: report.authorized_nodes,
+            missing_auth: report.missing_auth_nodes,
+            violation_count: report.violations.len(),
+        }
+    }
+
+    pub fn to_json_string(report: &DiagnosticReport) -> Result<String, serde_json::Error> {
+        let stats = Self::summarize(report);
+        serde_json::to_string_pretty(&stats)
+    }
+}
 
 pub struct MarkdownReporter;
 
