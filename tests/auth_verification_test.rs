@@ -254,3 +254,18 @@ fn test_json_summary_reporter_output() {
     let json_str = JsonSummaryReporter::to_json_string(&report).unwrap();
     assert!(json_str.contains(r#""status": "PASS""#));
 }
+
+#[test]
+fn test_example_fixtures_deserialization() {
+    use soroban_authscope::TraceParser;
+    let transfer_json = include_str!("../examples/fixtures/token_transfer_trace.json");
+    let node1 = TraceParser::parse_json(transfer_json).expect("valid transfer fixture");
+    assert_eq!(node1.function.function_name, "transfer");
+
+    let swap_json = include_str!("../examples/fixtures/dex_swap_trace.json");
+    let node2 = TraceParser::parse_json(swap_json).expect("valid swap fixture");
+    assert_eq!(node2.function.function_name, "swap_exact_tokens_for_tokens");
+    assert_eq!(node2.sub_invocations.len(), 1);
+}
+
+

@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "root_invocation": {
+  "schema_version": "1.0",
+  "root": {
     "function": {
       "contract": "CA_ROUTER",
       "function_name": "swap_exact_tokens_for_tokens",

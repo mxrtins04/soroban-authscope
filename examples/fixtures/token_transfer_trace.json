@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "root_invocation": {
+  "schema_version": "1.0",
+  "root": {
     "function": {
       "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
       "function_name": "transfer",
