@@ -286,5 +286,20 @@ fn test_sarif_reporter_schema() {
     assert!(sarif_json.contains(r#""name": "soroban-authscope""#));
 }
 
+#[test]
+fn test_caller_auth_requirement_rule() {
+    use soroban_authscope::{StrictVerifier, VerificationPolicy, AuthMismatch};
+
+    let unauthenticated = InvocationNode::new("C_VAULT", "withdraw", vec![]).set_authorized(true);
+    let verifier = StrictVerifier::new(VerificationPolicy::StrictAll).with_require_caller_auth(true);
+    let err = verifier.verify(&unauthenticated).unwrap_err();
+    assert!(err.violations.iter().any(|v| matches!(v, AuthMismatch::MissingCallerAuthentication { .. })));
+
+    let authenticated = unauthenticated.with_invoker("G_CALLER");
+    let ok = verifier.verify(&authenticated).unwrap();
+    assert_eq!(ok.violations.len(), 0);
+}
+
+
 
 
