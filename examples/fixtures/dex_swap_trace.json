@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "root_invocation": {
+    "function": {
+      "contract": "CA_ROUTER",
+      "function_name": "swap_exact_tokens_for_tokens",
+      "args": [
+        {"I128": 50000000},
+        {"I128": 49000000}
+      ]
+    },
+    "sub_invocations": [
+      {
+        "function": {
+          "contract": "CB_POOL",
+          "function_name": "swap",
+          "args": [
+            {"Address": "G_USER"},
+            {"I128": 50000000}
+          ]
+        },
+        "sub_invocations": [],
+        "is_authorized": true,
+        "invoker": "CA_ROUTER"
+      }
+    ],
+    "is_authorized": true,
+    "invoker": "G_USER"
+  }
+}

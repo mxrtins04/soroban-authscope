@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "root_invocation": {
+    "function": {
+      "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+      "function_name": "transfer",
+      "args": [
+        {"Address": "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"},
+        {"Address": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"},
+        {"I128": 1000000000}
+      ]
+    },
+    "sub_invocations": [],
+    "is_authorized": true,
+    "invoker": "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+  }
+}
