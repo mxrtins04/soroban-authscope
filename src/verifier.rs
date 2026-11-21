@@ -63,6 +63,12 @@ pub enum AuthMismatch {
         contract: String,
         function: String,
     },
+
+    #[error("Missing caller authentication for entrypoint '{contract}:{function}': expected invoker address")]
+    MissingCallerAuthentication {
+        contract: String,
+        function: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -82,6 +88,7 @@ impl DiagnosticReport {
 pub struct StrictVerifier {
     policy: VerificationPolicy,
     max_depth: Option<usize>,
+    require_caller_auth: bool,
 }
 
 impl StrictVerifier {
@@ -89,11 +96,17 @@ impl StrictVerifier {
         Self {
             policy,
             max_depth: None,
+            require_caller_auth: false,
         }
     }
 
     pub fn with_max_depth(mut self, max_depth: usize) -> Self {
         self.max_depth = Some(max_depth);
+        self
+    }
+
+    pub fn with_require_caller_auth(mut self, require: bool) -> Self {
+        self.require_caller_auth = require;
         self
     }
 
@@ -126,6 +139,15 @@ impl StrictVerifier {
                     function: node.function.function_name.clone(),
                     depth,
                     max_depth: limit,
+                });
+            }
+        }
+
+        if depth == 0 && self.require_caller_auth {
+            if node.invoker.as_ref().map_or(true, |i| i.trim().is_empty()) {
+                report.violations.push(AuthMismatch::MissingCallerAuthentication {
+                    contract: contract_str.clone(),
+                    function: node.function.function_name.clone(),
                 });
             }
         }
