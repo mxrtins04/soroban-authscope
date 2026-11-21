@@ -268,4 +268,23 @@ fn test_example_fixtures_deserialization() {
     assert_eq!(node2.sub_invocations.len(), 1);
 }
 
+#[test]
+fn test_sarif_reporter_schema() {
+    use soroban_authscope::SarifReporter;
+    let defective = InvocationNode::new("C_VAULT", "withdraw", vec![]).set_authorized(false);
+    let scope = AuthScope::strict();
+    let err = scope.analyze(&defective).unwrap_err();
+    let sarif = SarifReporter::generate(&err);
+
+    assert_eq!(sarif.version, "2.1.0");
+    assert_eq!(sarif.runs.len(), 1);
+    assert_eq!(sarif.runs[0].results.len(), 1);
+    assert_eq!(sarif.runs[0].results[0].rule_id, "AUTH001");
+
+    let sarif_json = SarifReporter::to_json_string(&err).unwrap();
+    assert!(sarif_json.contains(r#""version": "2.1.0""#));
+    assert!(sarif_json.contains(r#""name": "soroban-authscope""#));
+}
+
+
 
