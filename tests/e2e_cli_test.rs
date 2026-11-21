@@ -45,3 +45,13 @@ fn test_cli_markdown_output_format() {
     assert!(md.contains("AUTHORIZATION MISMATCH DETECTED"));
     assert!(md.contains("Missing Authorization"));
 }
+
+#[test]
+fn test_docs_cli_guide_exists_and_contains_rules() {
+    let guide = include_str!("../docs/CLI_GUIDE.md");
+    assert!(guide.contains("soroban-authscope"));
+    assert!(guide.contains("AUTH001"));
+    assert!(guide.contains("AUTH004"));
+    assert!(guide.contains("sarif"));
+}
+
