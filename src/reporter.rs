@@ -57,3 +57,80 @@ impl MarkdownReporter {
         out
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifReport {
+    pub version: String,
+    #[serde(rename = "$schema")]
+    pub schema: String,
+    pub runs: Vec<SarifRun>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifRun {
+    pub tool: SarifTool,
+    pub results: Vec<SarifResult>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifTool {
+    pub driver: SarifDriver,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifDriver {
+    pub name: String,
+    pub version: String,
+    pub information_uri: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifResult {
+    pub rule_id: String,
+    pub level: String,
+    pub message: SarifMessage,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SarifMessage {
+    pub text: String,
+}
+
+pub struct SarifReporter;
+
+impl SarifReporter {
+    pub fn generate(report: &DiagnosticReport) -> SarifReport {
+        let results = report
+            .violations
+            .iter()
+            .map(|v| SarifResult {
+                rule_id: "AUTH001".into(),
+                level: "error".into(),
+                message: SarifMessage {
+                    text: v.to_string(),
+                },
+            })
+            .collect();
+
+        SarifReport {
+            version: "2.1.0".into(),
+            schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json".into(),
+            runs: vec![SarifRun {
+                tool: SarifTool {
+                    driver: SarifDriver {
+                        name: "soroban-authscope".into(),
+                        version: env!("CARGO_PKG_VERSION").into(),
+                        information_uri: "https://github.com/mxrtins04/soroban-authscope".into(),
+                    },
+                },
+                results,
+            }],
+        }
+    }
+
+    pub fn to_json_string(report: &DiagnosticReport) -> Result<String, serde_json::Error> {
+        let sarif = Self::generate(report);
+        serde_json::to_string_pretty(&sarif)
+    }
+}
+
