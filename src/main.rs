@@ -16,11 +16,15 @@ fn main() {
 
     let file_path = &args[1];
     let mut format = "text";
+    let mut quiet = false;
     let mut i = 2;
     while i < args.len() {
         if args[i] == "--format" && i + 1 < args.len() {
             format = &args[i + 1];
             i += 2;
+        } else if args[i] == "--quiet" || args[i] == "-q" {
+            quiet = true;
+            i += 1;
         } else {
             i += 1;
         }
@@ -61,10 +65,14 @@ fn main() {
             println!("{}", serde_json::to_string_pretty(report).unwrap());
         }
         _ => {
-            println!("{}", TreeVisualizer::format_ascii(&root));
+            if !quiet {
+                println!("{}", TreeVisualizer::format_ascii(&root));
+            }
             match &res {
                 Ok(report) => {
-                    println!("Status: PASS (All {} invocation nodes strictly authorized)", report.total_nodes_scanned);
+                    if !quiet {
+                        println!("Status: PASS (All {} invocation nodes strictly authorized)", report.total_nodes_scanned);
+                    }
                 }
                 Err(report) => {
                     eprintln!("Status: FAIL (Detected {} authorization violation(s)):", report.violations.len());
