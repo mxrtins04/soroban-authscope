@@ -32,6 +32,16 @@ impl AuthScope {
         Self::new(VerificationPolicy::StrictNonWildcard)
     }
 
+    pub fn with_max_depth(mut self, max_depth: usize) -> Self {
+        self.verifier = self.verifier.with_max_depth(max_depth);
+        self
+    }
+
+    pub fn with_require_caller_auth(mut self, require: bool) -> Self {
+        self.verifier = self.verifier.with_require_caller_auth(require);
+        self
+    }
+
     pub fn analyze(&self, root: &InvocationNode) -> Result<DiagnosticReport, DiagnosticReport> {
         self.verifier.verify(root)
     }
