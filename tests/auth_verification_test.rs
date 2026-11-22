@@ -328,6 +328,22 @@ fn test_auth_scope_with_max_depth_limiter() {
     assert!(scope_ok.analyze(&deep_tree).is_ok());
 }
 
+#[test]
+fn test_terminal_reporter_ansi_color_formatting() {
+    use soroban_authscope::TerminalReporter;
+
+    let clean = InvocationNode::new("C_OK", "ok_call", vec![]).set_authorized(true);
+    let scope = soroban_authscope::AuthScope::strict();
+    let report_ok = scope.analyze(&clean).unwrap();
+    let out_ok = TerminalReporter::format_colored(&report_ok);
+    assert!(out_ok.contains("\x1b[32m✔ PASS"));
+
+    let bad = InvocationNode::new("C_FAIL", "bad_call", vec![]).set_authorized(false);
+    let report_err = scope.analyze(&bad).unwrap_err();
+    let out_err = TerminalReporter::format_colored(&report_err);
+    assert!(out_err.contains("\x1b[31m✖ FAIL"));
+}
+
 
 
 
