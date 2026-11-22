@@ -43,6 +43,10 @@ authscope analyze examples/fixtures/token_transfer_trace.json
   ```bash
   authscope analyze trace.json --format sarif > results.sarif
   ```
+* **Quiet Mode for CI Runners:**
+  ```bash
+  authscope analyze trace.json --quiet
+  ```
 
 ---
 

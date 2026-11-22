@@ -53,5 +53,6 @@ fn test_docs_cli_guide_exists_and_contains_rules() {
     assert!(guide.contains("AUTH001"));
     assert!(guide.contains("AUTH004"));
     assert!(guide.contains("sarif"));
+    assert!(guide.contains("--quiet"));
 }
 
