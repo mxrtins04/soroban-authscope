@@ -300,6 +300,34 @@ fn test_caller_auth_requirement_rule() {
     assert_eq!(ok.violations.len(), 0);
 }
 
+#[test]
+fn test_auth_scope_with_max_depth_limiter() {
+    use soroban_authscope::{AuthMismatch, AuthScope};
+
+    // Tree of depth 2: Level 0 -> Level 1 -> Level 2
+    let deep_tree = InvocationNode::new("C_ENTRY", "call_entry", vec![])
+        .set_authorized(true)
+        .with_sub_invocation(
+            InvocationNode::new("C_MID", "call_mid", vec![])
+                .set_authorized(true)
+                .with_sub_invocation(
+                    InvocationNode::new("C_DEEP", "call_deep", vec![]).set_authorized(true),
+                ),
+        );
+
+    // With max_depth 1: depth 2 will exceed threshold
+    let scope_limited = AuthScope::strict().with_max_depth(1);
+    let err = scope_limited.analyze(&deep_tree).unwrap_err();
+    assert!(err
+        .violations
+        .iter()
+        .any(|v| matches!(v, AuthMismatch::MaxDepthExceeded { depth: 2, max_depth: 1, .. })));
+
+    // With max_depth 3: valid
+    let scope_ok = AuthScope::strict().with_max_depth(3);
+    assert!(scope_ok.analyze(&deep_tree).is_ok());
+}
+
 
 
 
