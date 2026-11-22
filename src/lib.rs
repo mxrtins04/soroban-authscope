@@ -7,7 +7,7 @@ pub mod visualizer;
 
 pub use filter::InvocationFilter;
 pub use parser::{ParseError, TraceEnvelope, TraceParser};
-pub use reporter::{JsonSummaryReporter, MarkdownReporter, SarifReport, SarifReporter, SummaryStatistics};
+pub use reporter::{JsonSummaryReporter, MarkdownReporter, SarifReport, SarifReporter, SummaryStatistics, TerminalReporter};
 pub use types::{AuthContractId, AuthVal, InvocationFunction, InvocationNode};
 pub use verifier::{AuthMismatch, DiagnosticReport, StrictVerifier, VerificationPolicy};
 pub use visualizer::TreeVisualizer;

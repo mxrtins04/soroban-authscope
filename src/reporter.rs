@@ -134,3 +134,22 @@ impl SarifReporter {
     }
 }
 
+pub struct TerminalReporter;
+
+impl TerminalReporter {
+    pub fn format_colored(report: &DiagnosticReport) -> String {
+        let mut out = String::new();
+        if report.is_clean() {
+            out.push_str("\x1b[32m✔ PASS: Authorization verification passed with 0 violations\x1b[0m\n");
+            out.push_str(&format!("  Scanned {} invocation nodes.\n", report.total_nodes_scanned));
+        } else {
+            out.push_str(&format!("\x1b[31m✖ FAIL: Detected {} authorization violation(s)\x1b[0m\n", report.violations.len()));
+            for (i, v) in report.violations.iter().enumerate() {
+                out.push_str(&format!("  \x1b[31m[{}]\x1b[0m {}\n", i + 1, v));
+            }
+        }
+        out
+    }
+}
+
+
