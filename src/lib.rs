@@ -4,6 +4,7 @@ pub mod reporter;
 pub mod types;
 pub mod verifier;
 pub mod visualizer;
+pub mod xdr_decoder;
 
 pub use filter::InvocationFilter;
 pub use parser::{ParseError, TraceEnvelope, TraceParser};
@@ -11,6 +12,7 @@ pub use reporter::{JsonSummaryReporter, MarkdownReporter, SarifReport, SarifRepo
 pub use types::{AuthContractId, AuthVal, InvocationFunction, InvocationNode};
 pub use verifier::{AuthMismatch, DiagnosticReport, StrictVerifier, VerificationPolicy};
 pub use visualizer::TreeVisualizer;
+pub use xdr_decoder::XdrAuthDecoder;
 
 /// High-level diagnostic engine for inspecting Soroban authorization trees.
 pub struct AuthScope {
