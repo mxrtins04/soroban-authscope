@@ -1,4 +1,5 @@
 pub mod filter;
+pub mod host_capture;
 pub mod parser;
 pub mod reporter;
 pub mod types;
@@ -7,6 +8,7 @@ pub mod visualizer;
 pub mod xdr_decoder;
 
 pub use filter::InvocationFilter;
+pub use host_capture::HostAuthCapture;
 pub use parser::{ParseError, TraceEnvelope, TraceParser};
 pub use reporter::{JsonSummaryReporter, MarkdownReporter, SarifReport, SarifReporter, SummaryStatistics, TerminalReporter};
 pub use types::{AuthContractId, AuthVal, InvocationFunction, InvocationNode};
