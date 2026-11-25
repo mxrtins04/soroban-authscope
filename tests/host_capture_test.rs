@@ -13,4 +13,8 @@ fn test_real_soroban_host_multi_contract_auth_capture_and_depth_policy() {
 
     // Depth limit 0 flags the real nested sub-invocation
     assert!(AuthScope::strict().with_max_depth(0).analyze(root).is_err());
+
+    // Direct verify_live_router_capture helper matches
+    assert!(HostAuthCapture::verify_live_router_capture(2).is_ok());
+    assert!(HostAuthCapture::verify_live_router_capture(0).is_err());
 }
