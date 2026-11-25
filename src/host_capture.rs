@@ -87,4 +87,11 @@ impl HostAuthCapture {
             .map(|(_addr, inv)| Self::convert_authorized_invocation(inv))
             .collect()
     }
+
+    /// Capture live router->vault auth tree and verify it directly against `AuthScope` max-depth policy.
+    pub fn verify_live_router_capture(max_depth: usize) -> Result<crate::DiagnosticReport, crate::DiagnosticReport> {
+        let trees = Self::capture_router_vault_auth_tree();
+        let root = trees.first().expect("expected captured root auth tree");
+        crate::AuthScope::strict().with_max_depth(max_depth).analyze(root)
+    }
 }
