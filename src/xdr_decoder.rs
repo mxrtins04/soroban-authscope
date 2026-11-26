@@ -16,6 +16,18 @@ impl XdrAuthDecoder {
         Ok(Self::invocation_to_node(&entry.root_invocation))
     }
 
+    /// Decode and verify a base64 XDR `SorobanAuthorizationEntry` directly against a max-depth policy.
+    pub fn verify_entry_base64(
+        b64: &str,
+        max_depth: usize,
+    ) -> Result<crate::DiagnosticReport, String> {
+        let node = Self::decode_entry_base64(b64)?;
+        crate::AuthScope::strict()
+            .with_max_depth(max_depth)
+            .analyze(&node)
+            .map_err(|diag| format!("policy violation: {} violations", diag.violations.len()))
+    }
+
     /// Encode a `SorobanAuthorizationEntry` to base64 XDR (useful for test fixtures and tooling).
     pub fn encode_entry_base64(entry: &SorobanAuthorizationEntry) -> Result<String, String> {
         entry
