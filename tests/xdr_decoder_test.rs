@@ -50,4 +50,8 @@ fn test_real_xdr_authorization_entry_decodes_nested_tree_and_enforces_depth_poli
     // Depth limit 0 flags nested sub-invocation on real decoded XDR
     let tight_scope = AuthScope::strict().with_max_depth(0);
     assert!(tight_scope.analyze(&decoded).is_err());
+
+    // Direct verify_entry_base64 helper matches
+    assert!(XdrAuthDecoder::verify_entry_base64(&b64, 2).is_ok());
+    assert!(XdrAuthDecoder::verify_entry_base64(&b64, 0).is_err());
 }
